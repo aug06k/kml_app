@@ -32,8 +32,16 @@ def run():
             df = df[first_sheet]
             df = df.iloc[5:, [0, 5]]  # A6以降とF6以降を取得
             df.columns = ["WP", "height"]
-            df["WP"] = df["WP"].apply(lambda x: int(re.sub(r"\D", "", str(x))) if pd.notna(x) else None)
-            return dict(zip(df["WP"], df["height"]))
+
+            # WP列を処理（数字のみ抽出、数値以外は無視）
+            def extract_wp_number(value):
+                match = re.fullmatch(r"\D*(\d+)\D*", str(value))  # 完全に数字のみの部分を取得
+                return int(match.group(1)) if match else None  # 数値が見つからなければNone
+
+            df["WP"] = df["WP"].apply(extract_wp_number)
+            df = df.dropna(subset=["WP"])  # WPがNoneの行を削除
+
+            return dict(zip(df["WP"].astype(int), df["height"]))
 
         # WPPファイルの更新
         def update_wpp_heights(wpp_file, height_dict):
@@ -45,9 +53,12 @@ def run():
                 height_tag = waypoint.find("height")
 
                 if id_tag is not None and height_tag is not None:
-                    waypoint_id = int(id_tag.text)
-                    if waypoint_id in height_dict and not pd.isna(height_dict[waypoint_id]):
-                        height_tag.text = str(height_dict[waypoint_id])
+                    try:
+                        waypoint_id = int(id_tag.text)  # 数字のみのID以外はエラー
+                        if waypoint_id in height_dict and not pd.isna(height_dict[waypoint_id]):
+                            height_tag.text = str(height_dict[waypoint_id])
+                    except ValueError:
+                        continue  # IDが数字以外を含む場合はスキップ
 
             # 修正後のWPPを一時ファイルとして保存
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wpp") as tmp_output_wpp:
@@ -56,7 +67,7 @@ def run():
 
         # Excelからheightデータ取得
         height_data = load_height_data(xlsm_path)
-        
+
         # WPPを更新
         updated_wpp_path = update_wpp_heights(wpp_path, height_data)
 
