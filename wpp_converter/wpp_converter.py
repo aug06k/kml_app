@@ -42,6 +42,11 @@ def run():
             df = df.dropna(subset=["WP"])  # WPがNoneの行を削除
 
             return dict(zip(df["WP"].astype(int), df["height"]))
+            
+            st.write("読み込んだ height データ:", height_dict)  # 取得データを表示
+
+        return height_dict
+
 
         # WPPファイルの更新
         def update_wpp_heights(wpp_file, height_dict):
