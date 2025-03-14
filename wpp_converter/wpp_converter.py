@@ -27,37 +27,40 @@ def run():
         st.success("ファイルを処理しました！")
 
         # **Excelデータを読み込む関数**
-        def load_height_data(file_path):
-            # openpyxl を使用して Excel を開く（計算結果を取得）
-            wb = load_workbook(file_path, data_only=True)
-            sheet = wb.active
+       def load_height_data(file_path):
+    # openpyxl を使用して Excel を開く（計算結果を取得）
+    wb = load_workbook(file_path, data_only=True)
+    sheet = wb.active
 
-            # DataFrame に変換
-            df = pd.DataFrame(sheet.values)
+    # DataFrame に変換
+    df = pd.DataFrame(sheet.values)
 
-            st.write("Excelから読み込んだデータ:", df.head(20))  # **デバッグ: 先頭20行を確認**
+    # **デバッグ: 先頭20行を表示**
+    st.write("Excelから読み込んだデータ:", df.head(20))
 
-            # WP列（A列）と height列（F列）を取得
-            df = df.iloc[5:, [0, 5]]  # **A6以降（WP）と F6以降（height）を取得**
-            df.columns = ["WP", "height"]
+    # **WP列（A列）と height列（E列）を取得**
+    df = df.iloc[5:, [0, 4]]  # **A列（WP）と E列（height）を取得**
+    df.columns = ["WP", "height"]
 
-            # **WP列を自然数（1以上）に限定**
-            def extract_wp_number(value):
-                match = re.fullmatch(r"\D*(\d+)\D*", str(value))  # **完全な数値を取得**
-                return int(match.group(1)) if match and int(match.group(1)) > 0 else None  # **0以下は除外**
+    # **WP列を自然数（1以上）に限定**
+    def extract_wp_number(value):
+        match = re.fullmatch(r"\D*(\d+)\D*", str(value))  # **完全な数値を取得**
+        return int(match.group(1)) if match and int(match.group(1)) > 0 else None  # **0以下は除外**
 
-            df["WP"] = df["WP"].apply(extract_wp_number)
-            df = df.dropna(subset=["WP"])  # **WPがNoneの行を削除**
+    df["WP"] = df["WP"].apply(extract_wp_number)
+    df = df.dropna(subset=["WP"])  # **WPがNoneの行を削除**
 
-            # **height列をfloatに変換（数式の計算結果を含む）**
-            df["height"] = pd.to_numeric(df["height"], errors="coerce")
-            df = df.dropna(subset=["height"])  # **heightがNoneの行を削除**
+    # **height列をfloatに変換（数式の計算結果を含む）**
+    df["height"] = pd.to_numeric(df["height"], errors="coerce").astype(float)
+    df = df.dropna(subset=["height"])  # **height が None の行を削除**
 
-            height_dict = dict(zip(df["WP"].astype(int), df["height"]))
+    height_dict = dict(zip(df["WP"].astype(int), df["height"]))
 
-            st.write("読み込んだ height データ:", height_dict)  # **デバッグ: 取得したデータを表示**
+    # **デバッグ: 取得したデータを表示**
+    st.write("読み込んだ height データ:", height_dict)
 
-            return height_dict
+    return height_dict
+
 
         # **height_dict を取得**
         height_dict = load_height_data(xlsm_path)
