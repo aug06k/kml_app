@@ -1,27 +1,21 @@
 import streamlit as st
 import os
 import sys
-import xml.etree.ElementTree as ET
-import tempfile
 
-# `wpp_converter` がサブフォルダにある場合、パスを追加
-sys.path.append(os.path.abspath("wpp_converter"))
+# サイドバーでアプリを選択
+st.sidebar.title("アプリ選択")
+app_selection = st.sidebar.radio("アプリを選択", ["WPNUM Adder", "WPP Converter"])
 
-try:
-    import wpp_converter  # `wpp_converter.py` をインポート
-except Exception as e:
-    st.error(f"エラーが発生しました: {e}")
-
-# **2つのアプリを横並びに配置（間隔を広げる）**
-col1, col_space, col2 = st.columns([2, 0.5, 2])  # `col_space` で間隔を確保
-
-with col1:
-    # **KML WPP Number Adder**
-    st.header("KML WPP Number Adder")
+# メインアプリ
+if app_selection == "WPNUM Adder":
+    st.title("KML WPP Number Adder")
     st.write("KMLファイルをアップロードすると、KMLにWP番号を付けたものを出力します。")
 
+    import xml.etree.ElementTree as ET
+    import tempfile
+
     # KMLファイルのアップロード
-    uploaded_file = st.file_uploader("KMLファイルを選択してください", type=["kml"], key="kml_uploader")
+    uploaded_file = st.file_uploader("KMLファイルを選択してください", type=["kml"])
 
     def process_kml(kml_content):
         tree = ET.ElementTree(ET.fromstring(kml_content))
@@ -64,7 +58,7 @@ with col1:
                 altitude_mode.text = "absolute"
 
                 coordinates = ET.SubElement(point, "coordinates")
-                coordinates.text = f"{lon},{lat},{alt}"
+                coordinates.text = f"{lon},{lat},{alt}"  # 10m上に配置
 
                 # Document ノードに追加
                 document.append(placemark)
@@ -99,13 +93,13 @@ with col1:
 
             st.success("処理が完了しました！")
 
-with col2:
-    # **WPP Converter**
-    st.header("WPP Height Converter")
-    st.write("Excel (`.xlsm`) の `height` 値を `.wpp` ファイルに適用します。")
+# WPP Converter
+elif app_selection == "WPP Converter":
+    # wpp_converter がサブフォルダにある場合、パスを追加
+    sys.path.append(os.path.abspath("wpp_converter"))
 
-    # WPP Converter の UI を実行
     try:
-        wpp_converter.run()
+        import wpp_converter  # wpp_converter.py をインポート
+        wpp_converter.run()  # wpp_converter.py に run() を追加して呼び出す
     except Exception as e:
-        st.error(f"WPP Converter でエラーが発生しました: {e}")
+        st.error(f"エラーが発生しました: {e}")
