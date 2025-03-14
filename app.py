@@ -12,8 +12,8 @@ try:
 except Exception as e:
     st.error(f"エラーが発生しました: {e}")
 
-# **2つのアプリを横並びに配置**
-col1, col2 = st.columns(2)
+# **2つのアプリを横並びに配置（間隔を広げる）**
+col1, col_space, col2 = st.columns([2, 0.5, 2])  # `col_space` で間隔を確保
 
 with col1:
     # **KML WPP Number Adder**
