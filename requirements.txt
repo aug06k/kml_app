@@ -1,2 +1,5 @@
 streamlit
 lxml
+streamlit
+pandas
+openpyxl
