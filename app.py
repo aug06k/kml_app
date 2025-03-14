@@ -8,7 +8,7 @@ app_selection = st.sidebar.radio("アプリを選択", ["WPNUM Adder", "WPP Conv
 
 # メインアプリ
 if app_selection == "WPNUM Adder":
-    st.title("KML変換アプリ")
+    st.title("KML Number Adder")
     st.write("KMLファイルをアップロードすると、KMLにWP番号を付けたものを出力します。")
 
     import xml.etree.ElementTree as ET
