@@ -4,10 +4,10 @@ import sys
 
 # サイドバーでアプリを選択
 st.sidebar.title("アプリ選択")
-app_selection = st.sidebar.radio("アプリを選択", ["メインアプリ", "WPP Converter"])
+app_selection = st.sidebar.radio("アプリを選択", ["WPNUM Adder", "WPP Converter"])
 
 # メインアプリ
-if app_selection == "メインアプリ":
+if app_selection == "WPNUM Adder":
     st.title("KML変換アプリ")
     st.write("KMLファイルをアップロードすると、KMLにWP番号を付けたものを出力します。")
 
