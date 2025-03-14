@@ -4,6 +4,7 @@ import pandas as pd
 import re
 import os
 import tempfile
+from openpyxl import load_workbook  # **Excelの数式結果を取得するために追加**
 
 def run():
     st.title("WPP Height Converter")
@@ -27,13 +28,16 @@ def run():
 
         # **Excelデータを読み込む関数**
         def load_height_data(file_path):
-            df = pd.read_excel(file_path, sheet_name=None)
-            first_sheet = list(df.keys())[0]
-            df = df[first_sheet]
+            # openpyxl を使用して Excel を開く（計算結果を取得）
+            wb = load_workbook(file_path, data_only=True)
+            sheet = wb.active
+
+            # DataFrame に変換
+            df = pd.DataFrame(sheet.values)
 
             st.write("Excelから読み込んだデータ:", df.head(20))  # **デバッグ: 先頭20行を確認**
 
-            # WP列（A列）と height列（F列）を取得（F列は関数の結果）
+            # WP列（A列）と height列（F列）を取得
             df = df.iloc[5:, [0, 5]]  # **A6以降（WP）と F6以降（height）を取得**
             df.columns = ["WP", "height"]
 
@@ -45,7 +49,7 @@ def run():
             df["WP"] = df["WP"].apply(extract_wp_number)
             df = df.dropna(subset=["WP"])  # **WPがNoneの行を削除**
 
-            # **height列をfloatに変換（関数の計算結果も取得）**
+            # **height列をfloatに変換（数式の計算結果を含む）**
             df["height"] = pd.to_numeric(df["height"], errors="coerce")
             df = df.dropna(subset=["height"])  # **heightがNoneの行を削除**
 
@@ -73,7 +77,7 @@ def run():
                     try:
                         waypoint_id = int(id_tag.text)
 
-                        if waypoint_id > 0:  # **IDが0の場合は除外**
+                        if waypoint_id > 0:  # **IDが0の場合は完全に無視**
                             all_ids.append(waypoint_id)  # **IDリストに追加**
                             if waypoint_id in height_dict and not pd.isna(height_dict[waypoint_id]):
                                 height_tag.text = str(height_dict[waypoint_id])
