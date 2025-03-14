@@ -8,7 +8,7 @@ from openpyxl import load_workbook  # Excelの数式結果を取得するため�
 
 def run():
     st.title("WPP Height Converter")
-    st.write("Excel (`.xlsm`) の `height` 値を `.wpp` ファイルに適用します。")
+    st.write("Excel の `GCS入力値` を `.wpp` ファイルに適用します。")
 
     # ファイルアップロード
     xlsm_file = st.file_uploader("Excelファイル（.xlsm）を選択", type=["xlsm"])
