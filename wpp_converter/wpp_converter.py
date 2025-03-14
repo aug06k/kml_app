@@ -1,9 +1,20 @@
+import streamlit as st
 import xml.etree.ElementTree as ET
 import pandas as pd
 import re
-import streamlit as st
 import os
 
+def run():
+    st.title("WPP Height Converter")
+    st.write("Excel (`.xlsm`) の `height` 値を `.wpp` ファイルに適用します。")
+
+    # ファイルアップロード
+    xlsm_file = st.file_uploader("Excelファイル（.xlsm）を選択", type=["xlsm"])
+    wpp_file = st.file_uploader("WPPファイルを選択", type=["wpp"])
+
+    if xlsm_file and wpp_file:
+        # ファイルの処理
+        st.success("ファイルを処理しました！")
 # アップロードファイルの保存先
 UPLOAD_DIR = "wpp_converter/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
