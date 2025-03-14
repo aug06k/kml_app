@@ -1,4 +1,16 @@
 import streamlit as st
+
+st.sidebar.title("アプリ選択")
+app_selection = st.sidebar.radio("アプリを選択", ["メインアプリ", "WPP Converter"])
+
+if app_selection == "メインアプリ":
+    st.title("メインアプリ")
+    st.write("ここに既存のアプリのコードを記述")
+
+elif app_selection == "WPP Converter":
+    from wpp_converter import wpp_converter
+    wpp_converter  # Streamlitが `wpp_converter.py` を実行
+
 import xml.etree.ElementTree as ET
 import tempfile
 
