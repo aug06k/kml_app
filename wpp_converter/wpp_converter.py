@@ -30,26 +30,33 @@ def run():
             df = pd.read_excel(file_path, sheet_name=None)
             first_sheet = list(df.keys())[0]
             df = df[first_sheet]
+
+            st.write("Excelから読み込んだデータ:", df.head(20))  # デバッグ: 先頭20行を表示
+
+            # WP列（A列）と height列（F列）を取得（F列は関数の結果）
             df = df.iloc[5:, [0, 5]]  # A6以降とF6以降を取得
             df.columns = ["WP", "height"]
 
-            # WP列を数値に変換し、変換できないものはスキップ
+            # **WP列を自然数のみ取得**
             def extract_wp_number(value):
-                match = re.search(r"\d+", str(value))  # 数字を抽出
-                return int(match.group()) if match else None  # 数値が見つからなければNone
+                match = re.fullmatch(r"\D*(\d+)\D*", str(value))  # 完全な数値を取得
+                return int(match.group(1)) if match and int(match.group(1)) > 0 else None  # 0以下は除外
 
             df["WP"] = df["WP"].apply(extract_wp_number)
-            df = df.dropna(subset=["WP"])  # WPがNone（変換不可）の行は削除
+            df = df.dropna(subset=["WP"])  # WPがNoneの行を削除
+
+            # **height列をfloatに変換（関数の計算結果も取得）**
+            df["height"] = pd.to_numeric(df["height"], errors="coerce")
+            df = df.dropna(subset=["height"])  # heightがNoneの行を削除
 
             height_dict = dict(zip(df["WP"].astype(int), df["height"]))
 
-            # **デバッグ用: 取得したデータを表示**
-            st.write("読み込んだ height データ:", height_dict)
+            st.write("読み込んだ height データ:", height_dict)  # デバッグ: 取得したデータを表示
 
             return height_dict
 
-        # **height_dict を先に定義**
-        height_dict = load_height_data(xlsm_path)  # Excelから height データ取得
+        # **height_dict を取得**
+        height_dict = load_height_data(xlsm_path)
 
         # WPPファイルの更新関数
         def update_wpp_heights(wpp_file, height_dict):
@@ -65,13 +72,15 @@ def run():
                 if id_tag is not None and height_tag is not None:
                     try:
                         waypoint_id = int(id_tag.text)
-                        all_ids.append(waypoint_id)  # IDリストに追加
-                        if waypoint_id in height_dict and not pd.isna(height_dict[waypoint_id]):
-                            height_tag.text = str(height_dict[waypoint_id])
+
+                        if waypoint_id > 0:  # **IDが自然数のみ処理**
+                            all_ids.append(waypoint_id)  # IDリストに追加
+                            if waypoint_id in height_dict and not pd.isna(height_dict[waypoint_id]):
+                                height_tag.text = str(height_dict[waypoint_id])
                     except ValueError:
                         continue  # IDが数値でない場合はスキップ
             
-            st.write("WPP 内の全 ID:", all_ids)  # WPP 内の ID リストをデバッグ表示
+            st.write("WPP 内の全 ID:", all_ids)  # デバッグ用: WPP 内の ID リストを表示
 
             # 修正後のWPPを一時ファイルとして保存
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wpp") as tmp_output_wpp:
